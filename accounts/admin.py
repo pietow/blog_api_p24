@@ -11,11 +11,12 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "username",
         "name",
-        "is_staff"
+        "is_staff",
+        "password",
     ]
-    fieldsets = UserAdmin.fieldsets + (('my_name_label', {"fields": ("name",)}),)
+    fieldsets = UserAdmin.fieldsets + ((None, {"fields": ("name",)}),)
     # fieldsets = (('my_name_label', {"fields": ("name", "password")}),)
-    add_fieldsets = UserAdmin.add_fieldsets + (('my_name_label', {"fields": ("name",)}),)
+    add_fieldsets = UserAdmin.add_fieldsets + (('_name_label', {"fields": ("name",)}),)
     # add_fieldsets =  (('my_name_label', {"fields": ("name",)}),)
 
 admin.site.register(CustomUser, CustomUserAdmin)
