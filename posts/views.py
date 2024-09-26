@@ -1,12 +1,24 @@
 from rest_framework import generics, permissions
 from .models import Post
 from .serializers import PostSerializer
+from .permissions import IsAuthorOrReadOnly
 
 class PostList(generics.ListCreateAPIView):
+    permission_classes = (IsAuthorOrReadOnly, )
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
+    def perform_create(self, serializer):
+        print('perform create')
+        serializer.save(author=self.request.user)
+
+    def get_queryset(self):
+        print(self.request.user.is_superuser)
+        if self.request.user.is_superuser:
+            return Post.objects.all()
+        return Post.objects.filter(author=self.request.user)
+
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.IsAdminUser, )
+    permission_classes = (IsAuthorOrReadOnly, )
     queryset = Post.objects.all()
     serializer_class = PostSerializer
