@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-akj-3rojq4t8wf@z4t^y6=_-h(1des1#!n+tdd-j6&vs%nkcmo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,16 +40,19 @@ INSTALLED_APPS = [
     #third party
     'rest_framework',
     'rest_framework.authtoken',
-    "allauth", # new
-    "allauth.account", # new
-    "allauth.socialaccount", # new
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     "dj_rest_auth",
     "dj_rest_auth.registration", # new
+
     #local apps
     'accounts',
     'posts',
 
 ]
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,7 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware', # new
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'django_project.urls'
@@ -120,10 +123,13 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated", #default
     ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [ # new
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ],
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #         'rest_framework.renderers.JSONRenderer',
+    # ),
 }
 
 # Internationalization
@@ -142,6 +148,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static' 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
