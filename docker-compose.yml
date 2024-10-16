@@ -1,0 +1,33 @@
+services:
+  web:
+    build: .
+    command: gunicorn --workers 3 --bind 0.0.0.0:8000 django_project.wsgi:application
+    volumes:
+      - .:/usr/src/app
+      - static_volume:/usr/src/app/static
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    # env_file:
+    #   - .env
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - static_volume:/usr/src/app/static
+    depends_on:
+      - web
+    networks:
+      - app-network
+
+volumes:
+  static_volume:
+
+networks:
+  app-network:
+    driver: bridge
+
