@@ -26,4 +26,3 @@ venv/
 # Ignore migrations pycache (optional if you only want source migrations)
 migrations/**/__pycache__/
 migrations/**/*.pyc
-

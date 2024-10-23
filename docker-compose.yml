@@ -9,8 +9,6 @@ services:
       - "8000:8000"
     networks:
       - app-network
-    # env_file:
-    #   - .env
 
   nginx:
     image: nginx:latest
