@@ -26,7 +26,7 @@ COPY . .
 RUN python manage.py collectstatic --noinput
 
 # Run migrations
-RUN python manage.py migrate
+# RUN python manage.py migrate
 
 # Expose the port on which Django will run
 EXPOSE 8000
