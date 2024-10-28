@@ -40,13 +40,6 @@ jobs:
       - name: Build and run containers with Docker Compose
         run: docker compose up -d --build
 
-      - name: Wait for Postgres to be ready
-        run: |
-          until pg_isready -h localhost -U postgres; do
-            echo "Waiting for Postgres...";
-            sleep 3;
-          done
-
       - name: Run tests
         run: docker compose exec web python manage.py showmigrations
 
