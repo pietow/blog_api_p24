@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - PREP
-    # Allow manual triggering
   workflow_dispatch:
 
 jobs:
@@ -16,15 +15,20 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      # Step 2: Create .env file with necessary variables
       - name: Create .env file
-        run: touch .env
+        run: |
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_HOST=postgres_db" >> .env
+          echo "DB_PORT=5432" >> .env
 
-      # Step 2: Build and run the Docker containers defined in docker-compose.yml
-      - name: Build and run containers with Docker Compose
-        run: docker compose up -d --build
+      # Step 3: Build the Docker images
+      - name: Build Docker images
+        run: docker compose build
 
-      # Step 3: Start PostgreSQL container
-      # Use the same settings as your Django configuration to ensure consistency
+      # Step 4: Start PostgreSQL container separately
       - name: Start PostgreSQL container
         run: |
           docker run -d \
@@ -36,7 +40,7 @@ jobs:
           -p 5432:5432 \
           postgres:latest
 
-      # Step 4: Wait for the PostgreSQL service to be ready
+      # Step 5: Wait for the PostgreSQL service to be ready
       - name: Wait for Postgres to be ready
         run: |
           until docker exec postgres_db pg_isready -U ${{ secrets.DB_USER }}; do
@@ -44,20 +48,18 @@ jobs:
             sleep 3;
           done
 
-      # Step 5: Run the Django tests
-      # Pass the environment variables to the container to match the Django settings
-      - name: Run tests
-        run: |
-          docker compose exec -e DB_NAME=${{ secrets.DB_NAME }} \
-                              -e DB_USER=${{ secrets.DB_USER }} \
-                              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                              -e DB_HOST=postgres_db \
-                              -e DB_PORT=5432 \
-                              web python manage.py test
+      # Step 6: Start all services with Docker Compose
+      - name: Start services with Docker Compose
+        run: docker compose up -d
 
-      # Step 6: Teardown - Stop and remove the containers to clean up the environment
+      # Step 7: Run the Django tests
+      - name: Run tests
+        run: docker compose exec web python manage.py test
+
+      # Step 8: Teardown - Stop and remove the containers to clean up the environment
       - name: Teardown containers
         run: |
           docker compose down
           docker stop postgres_db
           docker rm postgres_db
+
