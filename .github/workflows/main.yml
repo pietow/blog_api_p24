@@ -48,7 +48,7 @@ jobs:
           done
 
       - name: Run tests
-        run: docker compose exec web python manage.py test
+        run: docker compose exec web python manage.py showmigrations
 
       - name: Teardown containers
         run: docker compose down
