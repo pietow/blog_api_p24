@@ -29,23 +29,28 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Create .env file with secrets
+      - name: Create .env file with database settings
         run: |
-          echo "DB_HOST=localhost" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_NAME=testdb" >> .env
           echo "DB_USER=postgres" >> .env
           echo "DB_PASSWORD=postgres" >> .env
-          echo "DB_NAME=testdb" >> .env
           echo "DB_PORT=5432" >> .env
 
       - name: Build the web container
         run: docker compose build
 
-      - name: start web container only
+      - name: Start the web container only
         run: docker compose up -d web
 
-      - name: Run tests
+      - name: Wait for Postgres to be ready
+        run: |
+          until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
+            echo "Waiting for Postgres...";
+            sleep 3;
+          done
+
+      - name: Run Django migrations and tests
         run: docker compose exec web python manage.py showmigrations
 
-      - name: Teardown containers
-        run: docker compose down
 
