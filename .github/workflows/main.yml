@@ -18,7 +18,7 @@ jobs:
 
       # Step 2: Build and run the Docker containers defined in docker-compose.yml
       - name: Build and run containers with Docker Compose
-        run: docker-compose up -d --build
+        run: docker compose up -d --build
 
       # Step 3: Start PostgreSQL container
       # Use the same settings as your Django configuration to ensure consistency
@@ -45,7 +45,7 @@ jobs:
       # Pass the environment variables to the container to match the Django settings
       - name: Run tests
         run: |
-          docker-compose exec -e DB_NAME=${{ secrets.DB_NAME }} \
+          docker compose exec -e DB_NAME=${{ secrets.DB_NAME }} \
                               -e DB_USER=${{ secrets.DB_USER }} \
                               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
                               -e DB_HOST=postgres_db \
@@ -55,6 +55,6 @@ jobs:
       # Step 6: Teardown - Stop and remove the containers to clean up the environment
       - name: Teardown containers
         run: |
-          docker-compose down
+          docker compose down
           docker stop postgres_db
           docker rm postgres_db
