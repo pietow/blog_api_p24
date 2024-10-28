@@ -14,13 +14,13 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: ${{ secrets.DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.DB_NAME }}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U ${{ secrets.DB_USER }}" 
+          --health-cmd "pg_isready -U postgres" 
           --health-interval 10s 
           --health-timeout 5s 
           --health-retries 5
@@ -29,12 +29,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Create .env file
+      - name: Create .env file with secrets
         run: |
           echo "DB_HOST=localhost" >> .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=postgres" >> .env
+          echo "DB_PASSWORD=postgres" >> .env
+          echo "DB_NAME=testdb" >> .env
           echo "DB_PORT=5432" >> .env
 
       - name: Build and run containers with Docker Compose
@@ -42,13 +42,14 @@ jobs:
 
       - name: Wait for Postgres to be ready
         run: |
-          until pg_isready -h localhost -U ${{ secrets.DB_USER }}; do
+          until pg_isready -h localhost -U postgres; do
             echo "Waiting for Postgres...";
             sleep 3;
           done
 
       - name: Run tests
-        run: docker compose exec web python manage.py test
+        run: docker compose exec web python manage.py test -v2
 
       - name: Teardown containers
         run: docker compose down
+
