@@ -37,8 +37,11 @@ jobs:
           echo "DB_NAME=testdb" >> .env
           echo "DB_PORT=5432" >> .env
 
-      - name: Build and run containers with Docker Compose
-        run: docker compose up -d --build
+      - name: Build the web container
+        run: docker compose build
+
+      - name: start web container only
+        run: docker compose up -d web
 
       - name: Run tests
         run: docker compose exec web python manage.py showmigrations
