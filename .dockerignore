@@ -1,9 +1,32 @@
-.venv/
-*.pyc
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# SQLite database file
 db.sqlite3
+
+# Logs
+*.log
+
+# Django static and media files
 static/
+media/
+
+# Virtual environments (if not in Docker)
+venv/
+.venv/
+
+# Git related files
+.git/
+.gitignore
+
+# Local environment variables
 .env
-.env.prod
+
+# Ignore migrations pycache (optional if you only want source migrations)
+migrations/**/__pycache__/
+migrations/**/*.pyc
+
 *.hcl 
 *.out 
 terraform/.terraform/
@@ -12,5 +35,3 @@ terraform_project/terraform.tfstate.backup
 terraform_project/.terraform/modules/modules.json
 terraform_project/.terraform/providers/registry.terraform.io/hashicorp/aws/5.73.0/linux_amd64/LICENSE.txt
 terraform_project/.terraform/providers/registry.terraform.io/hashicorp/aws/5.73.0/linux_amd64/terraform-provider-aws_v5.73.0_x5
-
-terraform_project2/.terraform/providers/registry.terraform.io/hashicorp/aws/5.73.0/linux_amd64/

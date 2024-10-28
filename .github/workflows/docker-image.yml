@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build and run containers with Docker Compose
+        run: docker-compose up -d --build
+
+      - name: Start PostgreSQL container
+        run: |
+          docker run -d \
+          --name postgres_db \
+          --network app-network \
+          -e POSTGRES_USER=${{ secrets.DB_USER }} \
+          -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
+          -e POSTGRES_DB=${{ secrets.DB_NAME }} \
+          -p 5432:5432 \
+          postgres:latest
+
+      - name: Wait for Postgres to be ready
+        run: |
+          until docker exec postgres_db pg_isready -U ${{ secrets.DB_USER }}; do
+            echo "Waiting for Postgres...";
+            sleep 3;
+          done
+
+      - name: Run tests
+        run: |
+          docker-compose exec -e DB_NAME=${{ secrets.DB_NAME }} \
+                              -e DB_USER=${{ secrets.DB_USER }} \
+                              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+                              -e DB_HOST=postgres_db \
+                              -e DB_PORT=5432 \
+                              web python manage.py test
+
+      - name: Teardown containers
+        run: |
+          docker-compose down
+          docker stop postgres_db
+          docker rm postgres_db
