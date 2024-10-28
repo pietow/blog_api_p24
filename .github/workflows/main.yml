@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - PREP
+    # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code from the repository
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Create .env file
+        run: touch .env
+
+      # Step 2: Build and run the Docker containers defined in docker-compose.yml
+      - name: Build and run containers with Docker Compose
+        run: docker compose up -d --build
+
+      # Step 3: Start PostgreSQL container
+      # Use the same settings as your Django configuration to ensure consistency
+      - name: Start PostgreSQL container
+        run: |
+          docker run -d \
+          --name postgres_db \
+          --network app-network \
+          -e POSTGRES_USER=${{ secrets.DB_USER }} \
+          -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
+          -e POSTGRES_DB=${{ secrets.DB_NAME }} \
+          -p 5432:5432 \
+          postgres:latest
+
+      # Step 4: Wait for the PostgreSQL service to be ready
+      - name: Wait for Postgres to be ready
+        run: |
+          until docker exec postgres_db pg_isready -U ${{ secrets.DB_USER }}; do
+            echo "Waiting for Postgres...";
+            sleep 3;
+          done
+
+      # Step 5: Run the Django tests
+      # Pass the environment variables to the container to match the Django settings
+      - name: Run tests
+        run: |
+          docker compose exec -e DB_NAME=${{ secrets.DB_NAME }} \
+                              -e DB_USER=${{ secrets.DB_USER }} \
+                              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+                              -e DB_HOST=postgres_db \
+                              -e DB_PORT=5432 \
+                              web python manage.py test
+
+      # Step 6: Teardown - Stop and remove the containers to clean up the environment
+      - name: Teardown containers
+        run: |
+          docker compose down
+          docker stop postgres_db
+          docker rm postgres_db
