@@ -1,0 +1,60 @@
+name: MyCI
+
+on:
+    push:
+        branches:
+            - PREP
+    workflow_dispatch:
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        services:
+            postgres:
+                image: postgres:latest
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: testdb
+                ports:
+                    - 5432:5432
+                
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v3
+
+            - name: set up python
+              uses: actions/setup@v3
+              with:
+                python-version: '3.9'
+
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+
+            - name: Create .env file with database settings
+              run: |
+                echo "DB_NAME=testdb" >> .env 
+                echo "DB_USER=postgres" >> .env 
+                echo "DB_PASSWORD=postgres" >> .env 
+                echo "DB_HOST=127.0.0.1" >> .env
+                echo "PORT=5432" >> .env
+
+            - name: Wait for postgres to be ready
+              run: |
+                until pg_isready -h 127.0.0.1 -p 5432 -U postgres postgres; do
+                    echo "Waiting for postgres...."
+                    sleep 3;
+                done
+
+            - name: Run migrations and tests
+              run: |
+                python manage.py migrate
+                python manage.py test
+
+
+
+
+    
