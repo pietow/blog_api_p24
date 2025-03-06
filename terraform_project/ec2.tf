@@ -43,28 +43,13 @@ resource "aws_instance" "web" {
   user_data = <<-EOF
               #!/bin/bash
 
-              # Update the package list
               sudo apt update -y
-
-              # Install PostgreSQL client for Ubuntu
               sudo apt install -y postgresql-client
-
-              # Installing Docker on Ubuntu
-
-              # 1. Install required dependencies
               sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-
-              # 2. Add the Docker repository
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
               sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-
-              # 3. Update the package list again
               sudo apt update -y
-
-              # 4. Install Docker CE (Community Edition)
               sudo apt install -y docker-ce docker-ce-cli containerd.io
-
-              # Ensure Docker starts on boot
               sudo systemctl enable docker
               sudo systemctl start docker
               EOF
